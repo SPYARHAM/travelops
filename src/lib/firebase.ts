@@ -81,7 +81,14 @@ export const trackActivity = async (
 
     return true;
   } catch (error) {
-    console.error("Error tracking activity:", error);
+    // Silently fail if Firebase permissions are not set up
+    // This prevents errors from breaking the UI
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "Firebase tracking disabled - check Firestore rules:",
+        error,
+      );
+    }
     return false;
   }
 };
@@ -93,7 +100,7 @@ export const trackFormSubmission = async (formData: {
   phone?: string;
   company?: string;
   message?: string;
-  formType: "contact" | "newsletter" | "book_call";
+  formType: "contact" | "newsletter" | "book_call" | "footer_newsletter";
 }) => {
   try {
     await addDoc(collection(db, "leads"), {
@@ -110,7 +117,13 @@ export const trackFormSubmission = async (formData: {
 
     return true;
   } catch (error) {
-    console.error("Error tracking form submission:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "Firebase form tracking disabled - check Firestore rules:",
+        error,
+      );
+    }
+    // Don't throw error - allow form submission to continue via email
     return false;
   }
 };
@@ -140,7 +153,13 @@ export const trackBookingRequest = async (bookingData: {
 
     return true;
   } catch (error) {
-    console.error("Error tracking booking:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "Firebase booking tracking disabled - check Firestore rules:",
+        error,
+      );
+    }
+    // Don't throw error - allow booking to continue via email
     return false;
   }
 };
