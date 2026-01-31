@@ -1,0 +1,184 @@
+import { initializeApp, getApps } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { getAnalytics, logEvent, isSupported } from "firebase/analytics";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAxJ-oHHYepXM2ewIeJ2DUrymgbjxVzq8Y",
+  authDomain: "flightfetch.firebaseapp.com",
+  projectId: "flightfetch",
+  storageBucket: "flightfetch.firebasestorage.app",
+  messagingSenderId: "721161353073",
+  appId: "1:721161353073:web:c1aaa128bdb614667428d0",
+};
+
+// Initialize Firebase
+const app =
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const db = getFirestore(app);
+
+// Analytics (only in browser)
+let analytics: ReturnType<typeof getAnalytics> | null = null;
+
+export const initAnalytics = async () => {
+  if (typeof window !== "undefined" && (await isSupported())) {
+    analytics = getAnalytics(app);
+  }
+  return analytics;
+};
+
+// Activity Types
+export type ActivityType =
+  | "page_view"
+  | "cta_click"
+  | "form_submit"
+  | "book_call"
+  | "send_email"
+  | "feature_hover"
+  | "section_view"
+  | "scroll_depth"
+  | "time_on_page";
+
+export interface Activity {
+  type: ActivityType;
+  timestamp?: ReturnType<typeof serverTimestamp>;
+  metadata?: Record<string, unknown>;
+  sessionId?: string;
+  userAgent?: string;
+  page?: string;
+}
+
+// Track activity to Firestore
+export const trackActivity = async (
+  activity: Omit<Activity, "timestamp" | "userAgent" | "page">,
+) => {
+  try {
+    const sessionId = getOrCreateSessionId();
+    const activityData: Activity = {
+      ...activity,
+      timestamp: serverTimestamp(),
+      sessionId,
+      userAgent:
+        typeof window !== "undefined" ? navigator.userAgent : undefined,
+      page:
+        typeof window !== "undefined" ? window.location.pathname : undefined,
+    };
+
+    await addDoc(collection(db, "activities"), activityData);
+
+    // Also log to analytics if available
+    if (analytics) {
+      logEvent(
+        analytics,
+        activity.type as string,
+        activity.metadata as Record<string, string>,
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error tracking activity:", error);
+    return false;
+  }
+};
+
+// Track form submissions
+export const trackFormSubmission = async (formData: {
+  name?: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message?: string;
+  formType: "contact" | "newsletter" | "book_call";
+}) => {
+  try {
+    await addDoc(collection(db, "leads"), {
+      ...formData,
+      timestamp: serverTimestamp(),
+      sessionId: getOrCreateSessionId(),
+      source: typeof window !== "undefined" ? window.location.href : undefined,
+    });
+
+    await trackActivity({
+      type: "form_submit",
+      metadata: { formType: formData.formType, email: formData.email },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error tracking form submission:", error);
+    return false;
+  }
+};
+
+// Track booking requests
+export const trackBookingRequest = async (bookingData: {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  message?: string;
+}) => {
+  try {
+    await addDoc(collection(db, "bookings"), {
+      ...bookingData,
+      status: "pending",
+      timestamp: serverTimestamp(),
+      sessionId: getOrCreateSessionId(),
+    });
+
+    await trackActivity({
+      type: "book_call",
+      metadata: { email: bookingData.email },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error tracking booking:", error);
+    return false;
+  }
+};
+
+// Session management
+const getOrCreateSessionId = (): string => {
+  if (typeof window === "undefined") return "server";
+
+  let sessionId = sessionStorage.getItem("travelops_session");
+  if (!sessionId) {
+    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem("travelops_session", sessionId);
+  }
+  return sessionId;
+};
+
+// Track page views
+export const trackPageView = async (pageName: string) => {
+  await trackActivity({
+    type: "page_view",
+    metadata: { page: pageName },
+  });
+};
+
+// Track CTA clicks
+export const trackCTAClick = async (ctaName: string, location: string) => {
+  await trackActivity({
+    type: "cta_click",
+    metadata: { ctaName, location },
+  });
+};
+
+// Track scroll depth
+export const trackScrollDepth = async (depth: number) => {
+  await trackActivity({
+    type: "scroll_depth",
+    metadata: { depth: `${depth}%` },
+  });
+};
+
+export { app, db, analytics };
