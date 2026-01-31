@@ -60,7 +60,7 @@ export const sendContactEmail = async (
   }
 };
 
-// Send booking request email
+// Send booking request email to admin
 export const sendBookingEmail = async (
   data: BookingEmailData,
 ): Promise<boolean> => {
@@ -74,18 +74,46 @@ export const sendBookingEmail = async (
       preferred_time: data.preferredTime || "Not specified",
       message: data.message || "No additional message",
       to_email: "hello@traveloops.com",
-      subject: `New Consultation Booking Request from ${data.name}`,
+      subject: `🎯 New Consultation Booking: ${data.name} - ${data.preferredDate || "Flexible"} at ${data.preferredTime || "flexible time"}`,
     };
 
     const response = await emailjs.send(
       EMAILJS_SERVICE_ID,
-      "template_booking", // Use a separate template for bookings
+      "template_booking",
       templateParams,
     );
 
     return response.status === 200;
   } catch (error) {
     console.error("Error sending booking email:", error);
+    return false;
+  }
+};
+
+// Send confirmation email to user
+export const sendUserBookingConfirmation = async (
+  data: BookingEmailData,
+): Promise<boolean> => {
+  try {
+    const templateParams = {
+      user_name: data.name,
+      user_email: data.email,
+      preferred_date: data.preferredDate || "a date that works for you",
+      preferred_time: data.preferredTime || "a convenient time",
+      admin_email: "hello@traveloops.com",
+      company: data.company || "your company",
+      subject: `✅ Consultation Confirmed: ${data.name} - We'll be in touch!`,
+    };
+
+    const response = await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      "template_user_booking_confirm",
+      templateParams,
+    );
+
+    return response.status === 200;
+  } catch (error) {
+    console.error("Error sending user confirmation email:", error);
     return false;
   }
 };

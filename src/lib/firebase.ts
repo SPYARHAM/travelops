@@ -3,6 +3,9 @@ import {
   getFirestore,
   collection,
   addDoc,
+  doc,
+  updateDoc,
+  getDocs,
   serverTimestamp,
 } from "firebase/firestore";
 import { getAnalytics, logEvent, isSupported } from "firebase/analytics";
@@ -128,7 +131,7 @@ export const trackFormSubmission = async (formData: {
   }
 };
 
-// Track booking requests
+// Track booking requests with full details
 export const trackBookingRequest = async (bookingData: {
   name: string;
   email: string;
@@ -137,21 +140,29 @@ export const trackBookingRequest = async (bookingData: {
   preferredDate?: string;
   preferredTime?: string;
   message?: string;
-}) => {
+}): Promise<string | null> => {
   try {
-    await addDoc(collection(db, "bookings"), {
+    const docRef = await addDoc(collection(db, "bookings"), {
       ...bookingData,
       status: "pending",
       timestamp: serverTimestamp(),
       sessionId: getOrCreateSessionId(),
+      source: typeof window !== "undefined" ? window.location.href : undefined,
+      userAgent:
+        typeof window !== "undefined" ? navigator.userAgent : undefined,
+      createdAt: new Date().toISOString(),
     });
 
     await trackActivity({
       type: "book_call",
-      metadata: { email: bookingData.email },
+      metadata: {
+        email: bookingData.email,
+        date: bookingData.preferredDate || "not specified",
+        time: bookingData.preferredTime || "not specified",
+      },
     });
 
-    return true;
+    return docRef.id;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.warn(
@@ -160,7 +171,39 @@ export const trackBookingRequest = async (bookingData: {
       );
     }
     // Don't throw error - allow booking to continue via email
+    return null;
+  }
+};
+
+// Update booking status
+export const updateBookingStatus = async (
+  bookingId: string,
+  status: "pending" | "confirmed" | "completed" | "cancelled",
+) => {
+  try {
+    const bookingRef = doc(db, "bookings", bookingId);
+    await updateDoc(bookingRef, {
+      status,
+      updatedAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating booking status:", error);
     return false;
+  }
+};
+
+// Get all bookings (admin function)
+export const getBookings = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, "bookings"));
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    return [];
   }
 };
 
