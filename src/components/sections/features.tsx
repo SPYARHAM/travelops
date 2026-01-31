@@ -99,7 +99,10 @@ export function FeaturesSection() {
   };
 
   return (
-    <section id="features" className="py-24 px-6 relative overflow-hidden">
+    <section
+      id="features"
+      className="py-16 md:py-20 px-4 md:px-6 relative overflow-hidden"
+    >
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/50" />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-200/30 rounded-full blur-3xl" />
@@ -125,10 +128,10 @@ export function FeaturesSection() {
             Core Features
           </motion.div>
 
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             What We Build <span className="gradient-text">For You</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base text-gray-600 max-w-xl mx-auto">
             Core capabilities that transform how you operate
           </p>
         </motion.div>

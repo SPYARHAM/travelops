@@ -57,7 +57,10 @@ export function FinalCTASection() {
 
   return (
     <>
-      <section id="cta-final" className="py-24 px-6 relative overflow-hidden">
+      <section
+        id="cta-final"
+        className="py-16 md:py-20 px-4 md:px-6 relative overflow-hidden"
+      >
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-violet-50 via-indigo-50/50 to-white" />
 
@@ -102,7 +105,7 @@ export function FinalCTASection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true, margin: "-100px" }}
-            className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6"
+            className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4"
           >
             Ready to Build a{" "}
             <span className="gradient-text-animated">Smart Travel System</span>?
@@ -114,7 +117,7 @@ export function FinalCTASection() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true, margin: "-100px" }}
-            className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto"
+            className="text-base text-gray-600 mb-8 max-w-xl mx-auto"
           >
             Let&apos;s discuss how we can transform your travel operator system
             with a custom solution built just for you.

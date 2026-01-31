@@ -35,7 +35,10 @@ const benefits = [
 
 export function InvestmentSection() {
   return (
-    <section id="investment" className="py-24 px-6 relative overflow-hidden">
+    <section
+      id="investment"
+      className="py-16 md:py-20 px-4 md:px-6 relative overflow-hidden"
+    >
       {/* Background */}
       <div className="absolute inset-0 mesh-gradient opacity-40" />
       <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
@@ -61,7 +64,7 @@ export function InvestmentSection() {
           </motion.div>
 
           {/* Title */}
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-8">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-5">
             Custom System <span className="gradient-text">Implementation</span>
           </h2>
 
@@ -85,7 +88,7 @@ export function InvestmentSection() {
                 <p className="text-2xl text-gray-700 leading-relaxed font-light mb-6">
                   This is a custom system implementation.
                 </p>
-                <p className="text-xl text-gray-600 leading-relaxed mb-8">
+                <p className="text-base text-gray-600 leading-relaxed mb-6">
                   Pricing is discussed after understanding your business
                   workflow and scope during our free consultation call.
                 </p>

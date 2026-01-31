@@ -56,7 +56,10 @@ export function ProcessSection() {
   const [activeStep, setActiveStep] = useState(0);
 
   return (
-    <section id="process" className="py-24 px-6 relative overflow-hidden">
+    <section
+      id="process"
+      className="py-16 md:py-20 px-4 md:px-6 relative overflow-hidden"
+    >
       {/* Background */}
       <div className="absolute inset-0 mesh-gradient opacity-30" />
       <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white" />
@@ -81,10 +84,10 @@ export function ProcessSection() {
             Simple Process
           </motion.div>
 
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             How Onboarding <span className="gradient-text">Works</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base text-gray-600 max-w-xl mx-auto">
             Four simple steps from discovery to live system
           </p>
         </motion.div>

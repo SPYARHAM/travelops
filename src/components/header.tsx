@@ -75,7 +75,7 @@ export function Header() {
           isScrolled ? "shadow-lg shadow-violet-500/5" : ""
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <motion.div

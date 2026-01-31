@@ -68,7 +68,10 @@ const cardVariants = {
 
 export function AudienceSection() {
   return (
-    <section id="audience" className="py-24 px-6 relative overflow-hidden">
+    <section
+      id="audience"
+      className="py-16 md:py-20 px-4 md:px-6 relative overflow-hidden"
+    >
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/50" />
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-violet-200/40 rounded-full blur-3xl" />
@@ -94,10 +97,10 @@ export function AudienceSection() {
             Perfect Fit
           </motion.div>
 
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             Who This Is <span className="gradient-text">For</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
+          <p className="text-base text-gray-600 max-w-xl mx-auto mb-3">
             This is not for operators looking for basic tools
           </p>
           <p className="text-lg text-violet-600 font-medium">
