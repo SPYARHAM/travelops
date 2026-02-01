@@ -134,10 +134,10 @@ export function Footer() {
                   href="mailto:hello@traveloops.com"
                   className="text-gray-500 hover:text-violet-600 transition-colors"
                 >
-                  hello@traveloops.com
+                  jainarham@gmail.com
                 </a>
               </li>
-              <li className="text-gray-500">San Francisco, CA</li>
+              <li className="text-gray-500">774001952</li>
             </ul>
           </div>
 
