@@ -432,29 +432,24 @@ export const sendBookingEmail = async (
     // Validate configuration
     if (!EMAILJS_SERVICE_ID || EMAILJS_SERVICE_ID === "service_demo") {
       console.error("❌ EmailJS Service ID not configured");
-      throw new Error(
-        "EmailJS Service ID is missing. Please set NEXT_PUBLIC_EMAILJS_SERVICE_ID in .env.local",
-      );
+      return false;
     }
     if (
       !EMAILJS_BOOKING_TEMPLATE_ID ||
       EMAILJS_BOOKING_TEMPLATE_ID === "template_booking"
     ) {
       console.error("❌ EmailJS Booking Template ID not configured");
-      throw new Error(
-        "EmailJS Booking Template ID is missing. Please set NEXT_PUBLIC_EMAILJS_BOOKING_TEMPLATE_ID in .env.local",
-      );
+      return false;
     }
     if (!EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY === "demo_public_key") {
       console.error("❌ EmailJS Public Key not configured");
-      throw new Error(
-        "EmailJS Public Key is missing. Please set NEXT_PUBLIC_EMAILJS_PUBLIC_KEY in .env.local",
-      );
+      return false;
     }
 
     console.log("📧 Sending booking email to admin...");
     const htmlContent = createAdminBookingEmailHTML(data);
 
+    // EmailJS template parameters - ensure to_email is properly set
     const templateParams = {
       from_name: data.name,
       from_email: data.email,
@@ -463,11 +458,15 @@ export const sendBookingEmail = async (
       preferred_date: data.preferredDate || "Flexible",
       preferred_time: data.preferredTime || "Flexible",
       message: data.message || "No additional message",
+      // EmailJS requires 'to_email' or 'to' parameter for dynamic recipients
       to_email: ADMIN_EMAIL,
+      to: ADMIN_EMAIL,
+      reply_to: data.email,
       html_content: htmlContent,
-      subject: `🎯 New Consultation Booking: ${data.name} - ${data.preferredDate || "Flexible"} at ${data.preferredTime || "flexible time"}`,
+      subject: `New Booking: ${data.name} - ${data.preferredDate || "Flexible"}`,
     };
 
+    // Send using EmailJS
     const response = await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_BOOKING_TEMPLATE_ID,
@@ -478,17 +477,7 @@ export const sendBookingEmail = async (
     return response.status === 200;
   } catch (error: unknown) {
     const err = error as { message?: string; text?: string; status?: number };
-    console.error("❌ Error sending booking email:", error);
-    console.error("Error details:", {
-      message: err?.message || "Unknown error",
-      text: err?.text || "No error text",
-      status: err?.status || "No status",
-    });
-    console.error("Configuration check:", {
-      serviceId: EMAILJS_SERVICE_ID,
-      templateId: EMAILJS_BOOKING_TEMPLATE_ID,
-      publicKeySet: EMAILJS_PUBLIC_KEY !== "demo_public_key",
-    });
+    console.error("❌ Error sending booking email:", err?.message || error);
     return false;
   }
 };
@@ -503,30 +492,30 @@ export const sendUserBookingConfirmation = async (
       console.error(
         "❌ EmailJS Service ID not configured for user confirmation",
       );
-      throw new Error("EmailJS Service ID is missing");
+      return false;
     }
     if (
       !EMAILJS_BOOKING_CONFIRM_TEMPLATE_ID ||
       EMAILJS_BOOKING_CONFIRM_TEMPLATE_ID === "template_booking_confirm"
     ) {
       console.error("❌ EmailJS User Confirmation Template ID not configured");
-      throw new Error(
-        "EmailJS User Confirmation Template ID is missing. Please set NEXT_PUBLIC_EMAILJS_BOOKING_CONFIRM_TEMPLATE_ID in .env.local",
-      );
+      return false;
     }
 
     console.log("📧 Sending confirmation email to user...");
     const htmlContent = createUserConfirmationEmailHTML(data);
 
+    // EmailJS template parameters for user confirmation
     const templateParams = {
       user_name: data.name,
-      user_email: data.email,
+      to_email: data.email,
+      to: data.email,
       preferred_date: data.preferredDate || "a date that works for you",
       preferred_time: data.preferredTime || "a convenient time",
       admin_email: ADMIN_EMAIL,
       company: data.company || "your company",
       html_content: htmlContent,
-      subject: `✅ Consultation Confirmed: ${data.name} - We'll be in touch!`,
+      subject: `Booking Confirmed: ${data.name} - We'll be in touch!`,
     };
 
     const response = await emailjs.send(
@@ -539,12 +528,10 @@ export const sendUserBookingConfirmation = async (
     return response.status === 200;
   } catch (error: unknown) {
     const err = error as { message?: string; text?: string; status?: number };
-    console.error("❌ Error sending user confirmation email:", error);
-    console.error("Error details:", {
-      message: err?.message || "Unknown error",
-      text: err?.text || "No error text",
-      status: err?.status || "No status",
-    });
+    console.error(
+      "❌ Error sending user confirmation email:",
+      err?.message || error,
+    );
     return false;
   }
 };

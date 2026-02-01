@@ -279,7 +279,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
     try {
       toast.loading("Sending your booking request...", { id: "booking" });
 
-      // Store in Firebase
+      // Store in Firebase (this is the most important part)
       await trackBookingRequest({
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -290,31 +290,36 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
         message: formData.message.trim(),
       });
 
-      // Send email to admin
-      const adminEmailSent = await sendBookingEmail({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        company: formData.company.trim(),
-        preferredDate: formData.preferredDate,
-        preferredTime: formData.preferredTime,
-        message: formData.message.trim(),
-      });
-
-      if (!adminEmailSent) {
-        throw new Error("Failed to send booking notification");
+      // Try to send email to admin (non-blocking)
+      let adminEmailSent = false;
+      try {
+        adminEmailSent = await sendBookingEmail({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          company: formData.company.trim(),
+          preferredDate: formData.preferredDate,
+          preferredTime: formData.preferredTime,
+          message: formData.message.trim(),
+        });
+      } catch (emailError) {
+        console.warn("Admin email failed, but booking was saved:", emailError);
       }
 
-      // Send confirmation email to user
-      await sendUserBookingConfirmation({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        company: formData.company.trim(),
-        preferredDate: formData.preferredDate,
-        preferredTime: formData.preferredTime,
-        message: formData.message.trim(),
-      });
+      // Try to send confirmation email to user (non-blocking)
+      try {
+        await sendUserBookingConfirmation({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          company: formData.company.trim(),
+          preferredDate: formData.preferredDate,
+          preferredTime: formData.preferredTime,
+          message: formData.message.trim(),
+        });
+      } catch (confirmError) {
+        console.warn("User confirmation email failed:", confirmError);
+      }
 
       // Show success message
       toast.success(
