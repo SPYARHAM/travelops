@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Check } from "lucide-react";
 
@@ -32,9 +32,63 @@ const TIME_SLOTS = [
   { time: "17:30", label: "5:30 PM" },
 ];
 
+// Generate random booked slots for a given date
+const generateBookedSlots = (dateStr: string): string[] => {
+  if (!dateStr) return [];
+
+  const selectedDate = new Date(dateStr);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  selectedDate.setHours(0, 0, 0, 0);
+
+  // Calculate days from today
+  const daysDiff = Math.floor(
+    (selectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  // Week 1 (next 7 days): 3-9 booked slots
+  // Week 2 (days 8-14): 1-10 booked slots
+  let minSlots = 3;
+  let maxSlots = 9;
+
+  if (daysDiff >= 7 && daysDiff < 14) {
+    minSlots = 1;
+    maxSlots = 10;
+  }
+
+  // Use date as seed for consistent randomness
+  const seed = dateStr.split("-").join("");
+  const random = (index: number) => {
+    const x = Math.sin(parseInt(seed) + index) * 10000;
+    return x - Math.floor(x);
+  };
+
+  // Randomly select number of slots to book
+  const numBookedSlots =
+    Math.floor(random(0) * (maxSlots - minSlots + 1)) + minSlots;
+
+  // Randomly select which slots are booked
+  const bookedIndices: number[] = [];
+  while (bookedIndices.length < numBookedSlots) {
+    const index = Math.floor(
+      random(bookedIndices.length + 100) * TIME_SLOTS.length,
+    );
+    if (!bookedIndices.includes(index)) {
+      bookedIndices.push(index);
+    }
+  }
+
+  return bookedIndices.map((i) => TIME_SLOTS[i].time);
+};
+
 export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Generate booked slots when date changes using useMemo
+  const bookedSlots = useMemo(() => {
+    return date ? generateBookedSlots(date) : [];
+  }, [date]);
 
   // Format display for selected time
   const formatDisplayTime = (timeStr: string) => {
@@ -80,6 +134,10 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
     }
 
     return false;
+  };
+
+  const isSlotBooked = (slotTime: string) => {
+    return bookedSlots.includes(slotTime);
   };
 
   // Close on click outside
@@ -151,43 +209,54 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
                 {TIME_SLOTS.map((slot) => {
                   const isSelected = value === slot.time;
                   const isDisabled = shouldDisableSlot(slot.time);
+                  const isBooked = isSlotBooked(slot.time);
+                  const isUnavailable = isDisabled || isBooked;
 
                   return (
-                    <button
-                      key={slot.time}
-                      type="button"
-                      onClick={() => {
-                        if (!isDisabled) {
-                          onChange(slot.time);
-                          setIsOpen(false);
-                        }
-                      }}
-                      disabled={isDisabled}
-                      className={`
-                        relative px-2 py-2 rounded-lg text-xs font-medium transition-all duration-150
-                        ${
-                          isDisabled
-                            ? "text-gray-300 cursor-not-allowed bg-gray-50/50"
-                            : isSelected
-                              ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md shadow-violet-500/30"
-                              : "bg-gray-50 text-gray-700 hover:bg-violet-50 hover:text-violet-700 border border-gray-100 hover:border-violet-200"
-                        }
-                      `}
-                    >
-                      {slot.label}
-                      {isSelected && (
-                        <motion.div
-                          layoutId="selected-time"
-                          className="absolute inset-0 rounded-lg ring-2 ring-violet-500 ring-offset-1"
-                          initial={false}
-                          transition={{
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 30,
-                          }}
-                        />
+                    <div key={slot.time} className="relative group">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isUnavailable) {
+                            onChange(slot.time);
+                            setIsOpen(false);
+                          }
+                        }}
+                        disabled={isUnavailable}
+                        className={`
+                          relative px-2 py-2 rounded-lg text-xs font-medium transition-all duration-150 w-full
+                          ${
+                            isUnavailable
+                              ? "text-gray-300 cursor-not-allowed bg-gray-50/50 line-through"
+                              : isSelected
+                                ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md shadow-violet-500/30"
+                                : "bg-gray-50 text-gray-700 hover:bg-violet-50 hover:text-violet-700 border border-gray-100 hover:border-violet-200"
+                          }
+                        `}
+                      >
+                        {slot.label}
+                        {isSelected && (
+                          <motion.div
+                            layoutId="selected-time"
+                            className="absolute inset-0 rounded-lg ring-2 ring-violet-500 ring-offset-1"
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              stiffness: 400,
+                              damping: 30,
+                            }}
+                          />
+                        )}
+                      </button>
+
+                      {/* Tooltip for booked slots */}
+                      {isBooked && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                          Already Booked
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900"></div>
+                        </div>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>

@@ -162,7 +162,7 @@ export default function PrivacyPage() {
 
           <div className="glass-card rounded-2xl p-6 md:p-8 mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
-              8. Children's Privacy
+              8. Children&apos;s Privacy
             </h2>
             <p className="text-gray-600">
               Our services are not directed to children under 13 years of age.
@@ -191,7 +191,7 @@ export default function PrivacyPage() {
             <p className="text-gray-600">
               We may update this Privacy Policy from time to time. We will
               notify you of any changes by posting the new policy on this page
-              and updating the "Last updated" date. We encourage you to review
+              and updating the &quot;Last updated&quot; date. We encourage you to review
               this policy periodically.
             </p>
           </div>

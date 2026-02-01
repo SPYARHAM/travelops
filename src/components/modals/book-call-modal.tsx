@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Calendar,
-  Clock,
   Mail,
   Phone,
   Building,
@@ -16,10 +15,13 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import { trackBookingRequest } from "@/lib/firebase";
-import { sendBookingEmail, sendUserBookingConfirmation } from "@/lib/email";
+import {
+  sendBookingEmail,
+  sendUserBookingConfirmation,
+  initEmailJS,
+} from "@/lib/email";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 
@@ -63,6 +65,13 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Initialize EmailJS when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      initEmailJS();
+    }
+  }, [isOpen]);
 
   // Validation rules
   const validateField = (name: string, value: string): string | undefined => {

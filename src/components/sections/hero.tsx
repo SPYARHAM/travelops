@@ -85,10 +85,10 @@ export function HeroSection() {
               animate="visible"
               className="text-center lg:text-left order-2 lg:order-1"
             >
-              {/* Floating Badges */}
+              {/* Floating Badges - Hidden on mobile */}
               <motion.div
                 variants={itemVariants}
-                className="flex flex-wrap gap-2 justify-center lg:justify-start mb-5"
+                className="hidden lg:flex flex-wrap gap-2 justify-center lg:justify-start mb-5"
               >
                 {floatingBadges.map((badge, index) => {
                   const Icon = badge.icon;
@@ -199,7 +199,9 @@ export function HeroSection() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-[200px] h-[200px] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] bg-gradient-to-r from-violet-500/20 to-indigo-500/20 rounded-full blur-3xl" />
               </div>
-              <AnimatedGlobe />
+              <div className="relative z-10">
+                <AnimatedGlobe />
+              </div>
 
               {/* Floating Stats Cards - Hidden on smallest screens, shown on md+ */}
               <motion.div

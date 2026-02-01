@@ -204,10 +204,10 @@ export default function TermsPage() {
             </p>
             <p className="text-gray-600">
               <strong>Disclaimer:</strong> Except as expressly stated, our
-              services are provided "as is" without warranties of any kind,
-              either express or implied, including but not limited to warranties
-              of merchantability, fitness for a particular purpose, or
-              non-infringement.
+              services are provided &quot;as is&quot; without warranties of any
+              kind, either express or implied, including but not limited to
+              warranties of merchantability, fitness for a particular purpose,
+              or non-infringement.
             </p>
           </div>
 
@@ -292,11 +292,11 @@ export default function TermsPage() {
                   href="mailto:legal@traveloops.com"
                   className="text-violet-600 hover:text-violet-700"
                 >
-                  legal@traveloops.com
+                  jainarham@gmail.com
                 </a>
               </li>
               <li>
-                <strong>Address:</strong> San Francisco, CA
+                <strong>Phone Number:</strong> 774001952
               </li>
             </ul>
           </div>

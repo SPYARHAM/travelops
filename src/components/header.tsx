@@ -2,8 +2,8 @@
 
 import {
   motion,
-  useScroll,
-  useTransform,
+  // useScroll,
+  // useTransform,
   AnimatePresence,
 } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -27,20 +27,20 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isBookCallOpen, setIsBookCallOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
-  const { scrollY } = useScroll();
+  // const { scrollY } = useScroll();
 
-  const headerBg = useTransform(
-    scrollY,
-    [0, 50],
-    ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.8)"],
-  );
+  // const headerBg = useTransform(
+  //   scrollY,
+  //   [0, 50],
+  //   ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.8)"],
+  // );
 
-  const headerBlur = useTransform(scrollY, [0, 50], [0, 16]);
-  const headerBorder = useTransform(
-    scrollY,
-    [0, 50],
-    ["rgba(255, 255, 255, 0)", "rgba(139, 92, 246, 0.1)"],
-  );
+  // const headerBlur = useTransform(scrollY, [0, 50], [0, 16]);
+  // const headerBorder = useTransform(
+  //   scrollY,
+  //   [0, 50],
+  //   ["rgba(255, 255, 255, 0)", "rgba(139, 92, 246, 0.1)"],
+  // );
 
   useEffect(() => {
     const handleScroll = () => {

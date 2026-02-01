@@ -3,7 +3,6 @@
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useState } from "react";
 import {
-  MessageSquare,
   Palette,
   TrendingUp,
   FileText,
