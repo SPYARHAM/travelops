@@ -14,7 +14,6 @@ import {
   Github,
 } from "lucide-react";
 import { trackFormSubmission } from "@/lib/firebase";
-import { sendNewsletterEmail } from "@/lib/email";
 import toast from "react-hot-toast";
 
 const navLinks = [
@@ -50,8 +49,22 @@ export function Footer() {
         formType: "footer_newsletter",
       });
 
-      // Send welcome email and admin notification
-      await sendNewsletterEmail(email);
+      // Send email via API route
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to subscribe");
+      }
+
+      const result = await response.json();
+      console.log("Newsletter signup success:", result);
 
       toast.success(
         "You're subscribed! Check your email for a welcome message.",
@@ -66,8 +79,8 @@ export function Footer() {
       );
       setEmail("");
     } catch (error) {
+      console.error("Newsletter signup error:", error);
       toast.error("Failed to subscribe. Please try again.");
-      console.error(error);
     } finally {
       setIsSubmitting(false);
     }

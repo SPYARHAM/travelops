@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import { trackFormSubmission } from "@/lib/firebase";
-import { sendContactEmail } from "@/lib/email";
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -43,8 +42,22 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
         formType: "contact",
       });
 
-      // Send email notification
-      await sendContactEmail(formData);
+      // Send email via API route
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send message");
+      }
+
+      const result = await response.json();
+      console.log("Contact form success:", result);
 
       toast.success("Message sent! We'll get back to you soon.", {
         duration: 5000,
@@ -66,8 +79,8 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
 
       onClose();
     } catch (error) {
+      console.error("Contact form error:", error);
       toast.error("Something went wrong. Please try again.");
-      console.error(error);
     } finally {
       setIsSubmitting(false);
     }

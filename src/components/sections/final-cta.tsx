@@ -14,7 +14,6 @@ import {
   Rocket,
 } from "lucide-react";
 import { trackFormSubmission, trackCTAClick } from "@/lib/firebase";
-import { sendNewsletterEmail } from "@/lib/email";
 import toast from "react-hot-toast";
 
 export function FinalCTASection() {
@@ -33,8 +32,18 @@ export function FinalCTASection() {
         formType: "newsletter",
       });
 
-      // Send welcome email and admin notification
-      await sendNewsletterEmail(email);
+      // Send welcome email and admin notification via API
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send newsletter email");
+      }
 
       toast.success(
         "Perfect! Check your email for exclusive travel insights.",
