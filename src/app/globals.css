@@ -456,6 +456,11 @@ section {
   pointer-events: none;
 }
 
+/* Button cursor fix */
+button, .cursor-pointer {
+  cursor: pointer !important;
+}
+
 /* Modal Backdrop */
 .modal-backdrop {
   background: rgba(0, 0, 0, 0.5);
