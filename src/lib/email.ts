@@ -554,7 +554,7 @@ export const sendNewsletterEmail = async (email: string): Promise<boolean> => {
   try {
     const templateParams = {
       subscriber_email: email,
-      to_email: "hello@traveloops.com",
+      to_email: "jainarham2101@gmail.com",
       subject: "New Newsletter Subscription",
     };
 

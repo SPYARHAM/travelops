@@ -11,12 +11,12 @@ import {
 import { getAnalytics, logEvent, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAxJ-oHHYepXM2ewIeJ2DUrymgbjxVzq8Y",
-  authDomain: "flightfetch.firebaseapp.com",
-  projectId: "flightfetch",
-  storageBucket: "flightfetch.firebasestorage.app",
-  messagingSenderId: "721161353073",
-  appId: "1:721161353073:web:c1aaa128bdb614667428d0",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase

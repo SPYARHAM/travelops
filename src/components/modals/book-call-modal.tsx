@@ -77,26 +77,51 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
   const validateField = (name: string, value: string): string | undefined => {
     switch (name) {
       case "name":
-        if (!value.trim()) return "Name is required";
-        if (value.trim().length < 2)
-          return "Name must be at least 2 characters";
+        if (!value.trim()) return "Full name is required";
+        const nameParts = value
+          .trim()
+          .split(" ")
+          .filter((part) => part.length > 0);
+        if (nameParts.length < 2)
+          return "Please enter your full name (first and last name)";
+        if (value.trim().length < 3)
+          return "Name must be at least 3 characters";
         if (!/^[a-zA-Z\s'-]+$/.test(value.trim()))
           return "Name can only contain letters, spaces, hyphens, and apostrophes";
+        if (nameParts.some((part) => part.length < 2))
+          return "Each name part must be at least 2 characters";
         return undefined;
 
       case "email":
-        if (!value.trim()) return "Email is required";
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value.trim()))
-          return "Please enter a valid email address";
+        if (!value.trim()) return "Email address is required";
+        const emailValue = value.trim().toLowerCase();
+        // Strict email regex
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(emailValue))
+          return "Please enter a valid email address (e.g., name@example.com)";
+        // Check for common typos
+        if (emailValue.includes(".."))
+          return "Invalid email format - contains consecutive dots";
+        if (emailValue.startsWith(".") || emailValue.endsWith("."))
+          return "Email cannot start or end with a dot";
+        const domain = emailValue.split("@")[1];
+        if (!domain || !domain.includes("."))
+          return "Please enter a valid email domain";
         return undefined;
 
       case "phone":
         if (!value.trim()) return "Phone number is required";
+        // Remove all non-digit characters
         const phoneDigits = value.replace(/\D/g, "");
+        if (phoneDigits.length === 0)
+          return "Please enter a valid phone number";
         if (phoneDigits.length < 10)
-          return "Please enter a valid phone number (at least 10 digits)";
-        if (phoneDigits.length > 15) return "Phone number is too long";
+          return "Phone number must be at least 10 digits";
+        if (phoneDigits.length > 15)
+          return "Phone number cannot exceed 15 digits";
+        // Check for invalid patterns like all same digits
+        if (/^(\d)\1+$/.test(phoneDigits))
+          return "Please enter a valid phone number";
         return undefined;
 
       case "company":
@@ -239,13 +264,21 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
 
     // Validate form
     if (!validateForm()) {
-      toast.error("Please fix the errors below");
+      toast.error(
+        "Please check the form and fix all errors before submitting",
+        {
+          duration: 4000,
+          icon: "⚠️",
+        },
+      );
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      toast.loading("Sending your booking request...", { id: "booking" });
+
       // Store in Firebase
       await trackBookingRequest({
         name: formData.name.trim(),
@@ -258,7 +291,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
       });
 
       // Send email to admin
-      await sendBookingEmail({
+      const adminEmailSent = await sendBookingEmail({
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
@@ -267,6 +300,10 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
         preferredTime: formData.preferredTime,
         message: formData.message.trim(),
       });
+
+      if (!adminEmailSent) {
+        throw new Error("Failed to send booking notification");
+      }
 
       // Send confirmation email to user
       await sendUserBookingConfirmation({
