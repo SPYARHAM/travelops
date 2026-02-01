@@ -5,9 +5,10 @@ import {
 import { Resend } from "resend";
 import { NextRequest } from "next/server";
 
-const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
-
 export async function POST(req: NextRequest) {
+  // Initialize Resend inside the handler to avoid build-time errors
+  const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
+
   try {
     const body = await req.json();
     const { name, email, message, company, phone } = body;

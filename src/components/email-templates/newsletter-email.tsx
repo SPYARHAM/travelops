@@ -36,7 +36,7 @@ export function NewsletterEmailTemplate({
           Welcome to TravelOps!
         </h1>
         <p style={{ color: "#ede9fe", margin: "10px 0 0", fontSize: "16px" }}>
-          You're now part of the travel innovation community
+          You&apos;re now part of the travel innovation community
         </p>
       </div>
 
@@ -65,7 +65,7 @@ export function NewsletterEmailTemplate({
               fontWeight: "600",
             }}
           >
-            What's Coming Your Way?
+            What&apos;s Coming Your Way?
           </h2>
           <div style={{ textAlign: "left", margin: "20px 0" }}>
             <div

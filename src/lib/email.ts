@@ -1,8 +1,11 @@
 import { Resend } from "resend";
 
-// Resend configuration
-const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY || "");
 const ADMIN_EMAIL = "jainarham2101@gmail.com";
+
+// Helper function to get Resend instance (lazy initialization)
+const getResend = () => {
+  return new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY || "");
+};
 
 // Email types
 export interface ContactEmailData {
@@ -29,6 +32,7 @@ export const sendNewsletterEmail = async (email: string): Promise<boolean> => {
     console.error("❌ Resend API Key is not configured!");
     return false;
   }
+  const resend = getResend();
   try {
     const adminEmailHtml = createNewsletterAdminEmailHTML(email);
     const userEmailHtml = createNewsletterUserEmailHTML();
@@ -78,6 +82,7 @@ export const sendBookingEmail = async (
     console.error("❌ Resend API Key is not configured!");
     return false;
   }
+  const resend = getResend();
   try {
     const adminEmailHtml = createAdminBookingEmailHTML(data);
 
@@ -110,6 +115,7 @@ export const sendUserBookingConfirmation = async (
     console.error("❌ Resend API Key is not configured!");
     return false;
   }
+  const resend = getResend();
   try {
     const userEmailHtml = createUserConfirmationEmailHTML(data);
 
@@ -537,6 +543,11 @@ export async function sendContactEmail(formData: {
   email: string;
   message: string;
 }) {
+  if (!process.env.NEXT_PUBLIC_RESEND_API_KEY) {
+    console.error("❌ Resend API Key is not configured!");
+    throw new Error("Resend API Key is not configured");
+  }
+  const resend = getResend();
   try {
     // Send admin notification
     const adminEmailResult = await resend.emails.send({

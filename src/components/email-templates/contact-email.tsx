@@ -169,7 +169,7 @@ export function ContactUserEmailTemplate({ name }: { name: string }) {
       >
         <h1 style={{ margin: "0", fontSize: "32px" }}>✈️ Message Received!</h1>
         <p style={{ margin: "10px 0 0", fontSize: "18px", opacity: 0.9 }}>
-          We'll be in touch soon, {name}!
+          We&apos;ll be in touch soon, {name}!
         </p>
       </div>
 
@@ -188,8 +188,8 @@ export function ContactUserEmailTemplate({ name }: { name: string }) {
         <p
           style={{ marginBottom: "20px", color: "#6b7280", lineHeight: "1.6" }}
         >
-          Thank you for reaching out to TravelOps! We've received your message
-          and our team is excited to connect with you.
+          Thank you for reaching out to TravelOps! We&apos;ve received your
+          message and our team is excited to connect with you.
         </p>
 
         <div
@@ -211,17 +211,17 @@ export function ContactUserEmailTemplate({ name }: { name: string }) {
               Our team will review your message within 24 hours
             </li>
             <li style={{ marginBottom: "8px" }}>
-              We'll send you a personalized response with next steps
+              We&apos;ll send you a personalized response with next steps
             </li>
             <li style={{ marginBottom: "8px" }}>
-              If relevant, we'll schedule a demo call to show you TravelOps in
-              action
+              If relevant, we&apos;ll schedule a demo call to show you TravelOps
+              in action
             </li>
           </ul>
         </div>
 
         <p style={{ marginTop: "30px", color: "#6b7280", fontStyle: "italic" }}>
-          Questions? Just reply to this email - we're here to help!
+          Questions? Just reply to this email - we&apos;re here to help!
         </p>
       </div>
     </div>
