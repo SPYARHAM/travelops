@@ -2,7 +2,6 @@
 
 import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AnimatedGlobe } from "@/components/3d/animated-globe";
 import { useState } from "react";
 import { BookCallModal } from "@/components/modals/book-call-modal";
 import {
@@ -83,12 +82,12 @@ export function HeroSection() {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="text-center lg:text-left order-2 lg:order-1"
+              className="text-center lg:text-left order-1 lg:order-1"
             >
-              {/* Floating Badges - Hidden on mobile */}
+              {/* Floating Badges - Responsive */}
               <motion.div
                 variants={itemVariants}
-                className="hidden lg:flex flex-wrap gap-2 justify-center lg:justify-start mb-5"
+                className="flex flex-wrap gap-2 justify-center lg:justify-start mb-5"
               >
                 {floatingBadges.map((badge, index) => {
                   const Icon = badge.icon;
@@ -188,19 +187,327 @@ export function HeroSection() {
               </motion.div>
             </motion.div>
 
-            {/* Right Visual - 3D Globe */}
+            {/* Right Visual - Custom Travel Dashboard Design */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="relative h-[280px] md:h-[350px] lg:h-[420px] order-1 lg:order-2"
+              className="relative h-[280px] md:h-[350px] lg:h-[420px] order-2 lg:order-2 mt-8 lg:mt-0"
             >
-              {/* Glow effect behind globe */}
+              {/* Glow effect behind dashboard */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-[200px] h-[200px] md:w-[280px] md:h-[280px] lg:w-[320px] lg:h-[320px] bg-gradient-to-r from-violet-500/20 to-indigo-500/20 rounded-full blur-3xl" />
               </div>
-              <div className="relative z-10">
-                <AnimatedGlobe />
+              <div className="relative z-10 flex items-center justify-center h-full">
+                {/* Custom Travel Dashboard SVG */}
+                <svg
+                  viewBox="0 0 400 300"
+                  className="w-full h-auto max-w-md md:max-w-lg"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Background */}
+                  <rect
+                    width="400"
+                    height="300"
+                    rx="20"
+                    fill="url(#dashboardGradient)"
+                  />
+
+                  {/* Header Bar */}
+                  <rect
+                    x="20"
+                    y="20"
+                    width="360"
+                    height="40"
+                    rx="8"
+                    fill="rgba(255,255,255,0.1)"
+                  />
+                  <circle cx="40" cy="40" r="6" fill="#10B981" />
+                  <circle cx="60" cy="40" r="6" fill="#F59E0B" />
+                  <circle cx="80" cy="40" r="6" fill="#EF4444" />
+
+                  {/* Destination Cards */}
+                  <motion.g
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1, duration: 0.6 }}
+                  >
+                    <rect
+                      x="30"
+                      y="80"
+                      width="100"
+                      height="60"
+                      rx="8"
+                      fill="rgba(139, 92, 246, 0.2)"
+                      stroke="#8B5CF6"
+                      strokeWidth="1"
+                    />
+                    <rect
+                      x="30"
+                      y="85"
+                      width="90"
+                      height="8"
+                      rx="4"
+                      fill="#8B5CF6"
+                    />
+                    <rect
+                      x="30"
+                      y="100"
+                      width="60"
+                      height="4"
+                      rx="2"
+                      fill="rgba(139, 92, 246, 0.6)"
+                    />
+                    <rect
+                      x="30"
+                      y="110"
+                      width="40"
+                      height="4"
+                      rx="2"
+                      fill="rgba(139, 92, 246, 0.4)"
+                    />
+                  </motion.g>
+
+                  <motion.g
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2, duration: 0.6 }}
+                  >
+                    <rect
+                      x="150"
+                      y="80"
+                      width="100"
+                      height="60"
+                      rx="8"
+                      fill="rgba(59, 130, 246, 0.2)"
+                      stroke="#3B82F6"
+                      strokeWidth="1"
+                    />
+                    <rect
+                      x="150"
+                      y="85"
+                      width="80"
+                      height="8"
+                      rx="4"
+                      fill="#3B82F6"
+                    />
+                    <rect
+                      x="150"
+                      y="100"
+                      width="50"
+                      height="4"
+                      rx="2"
+                      fill="rgba(59, 130, 246, 0.6)"
+                    />
+                    <rect
+                      x="150"
+                      y="110"
+                      width="70"
+                      height="4"
+                      rx="2"
+                      fill="rgba(59, 130, 246, 0.4)"
+                    />
+                  </motion.g>
+
+                  <motion.g
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4, duration: 0.6 }}
+                  >
+                    <rect
+                      x="270"
+                      y="80"
+                      width="100"
+                      height="60"
+                      rx="8"
+                      fill="rgba(236, 72, 153, 0.2)"
+                      stroke="#EC4899"
+                      strokeWidth="1"
+                    />
+                    <rect
+                      x="270"
+                      y="85"
+                      width="75"
+                      height="8"
+                      rx="4"
+                      fill="#EC4899"
+                    />
+                    <rect
+                      x="270"
+                      y="100"
+                      width="55"
+                      height="4"
+                      rx="2"
+                      fill="rgba(236, 72, 153, 0.6)"
+                    />
+                    <rect
+                      x="270"
+                      y="110"
+                      width="65"
+                      height="4"
+                      rx="2"
+                      fill="rgba(236, 72, 153, 0.4)"
+                    />
+                  </motion.g>
+
+                  {/* Chat Bot Interface */}
+                  <motion.g
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.6, duration: 0.6 }}
+                  >
+                    <rect
+                      x="30"
+                      y="160"
+                      width="340"
+                      height="100"
+                      rx="12"
+                      fill="rgba(255,255,255,0.1)"
+                      stroke="rgba(255,255,255,0.2)"
+                      strokeWidth="1"
+                    />
+                    <circle cx="60" cy="180" r="12" fill="url(#botGradient)" />
+                    <rect
+                      x="85"
+                      y="172"
+                      width="100"
+                      height="6"
+                      rx="3"
+                      fill="rgba(255,255,255,0.8)"
+                    />
+                    <rect
+                      x="85"
+                      y="185"
+                      width="80"
+                      height="4"
+                      rx="2"
+                      fill="rgba(255,255,255,0.5)"
+                    />
+
+                    <rect
+                      x="250"
+                      y="200"
+                      width="100"
+                      height="20"
+                      rx="10"
+                      fill="#8B5CF6"
+                    />
+                    <rect
+                      x="260"
+                      y="205"
+                      width="80"
+                      height="4"
+                      rx="2"
+                      fill="white"
+                    />
+                    <rect
+                      x="260"
+                      y="212"
+                      width="60"
+                      height="4"
+                      rx="2"
+                      fill="rgba(255,255,255,0.8)"
+                    />
+                  </motion.g>
+
+                  {/* Stats */}
+                  <motion.g
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 1.8, duration: 0.6 }}
+                  >
+                    <rect
+                      x="30"
+                      y="280"
+                      width="60"
+                      height="8"
+                      rx="4"
+                      fill="#10B981"
+                    />
+                    <rect
+                      x="100"
+                      y="280"
+                      width="80"
+                      height="8"
+                      rx="4"
+                      fill="#F59E0B"
+                    />
+                    <rect
+                      x="190"
+                      y="280"
+                      width="70"
+                      height="8"
+                      rx="4"
+                      fill="#EF4444"
+                    />
+                  </motion.g>
+
+                  {/* Floating Elements */}
+                  <motion.circle
+                    cx="350"
+                    cy="50"
+                    r="4"
+                    fill="#8B5CF6"
+                    animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  <motion.circle
+                    cx="320"
+                    cy="70"
+                    r="3"
+                    fill="#3B82F6"
+                    animate={{ y: [0, -8, 0], opacity: [0.4, 0.9, 0.4] }}
+                    transition={{
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5,
+                    }}
+                  />
+                  <motion.circle
+                    cx="370"
+                    cy="90"
+                    r="2"
+                    fill="#EC4899"
+                    animate={{ y: [0, -6, 0], opacity: [0.3, 0.8, 0.3] }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1,
+                    }}
+                  />
+
+                  {/* Gradients */}
+                  <defs>
+                    <linearGradient
+                      id="dashboardGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="rgba(139, 92, 246, 0.1)" />
+                      <stop offset="50%" stopColor="rgba(59, 130, 246, 0.05)" />
+                      <stop offset="100%" stopColor="rgba(236, 72, 153, 0.1)" />
+                    </linearGradient>
+                    <linearGradient
+                      id="botGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
+                      <stop offset="0%" stopColor="#8B5CF6" />
+                      <stop offset="100%" stopColor="#EC4899" />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </div>
 
               {/* Floating Stats Cards - Hidden on smallest screens, shown on md+ */}

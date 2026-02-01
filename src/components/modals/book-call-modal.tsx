@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -270,21 +270,34 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
     try {
       toast.loading("Sending your booking request...", { id: "booking" });
 
-      // Store in Firebase (this is the most important part)
-      await trackBookingRequest({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        company: formData.company.trim(),
-        preferredDate: formData.preferredDate,
-        preferredTime: formData.preferredTime,
-        message: formData.message.trim(),
-      });
-
-      // Try to send email to admin (non-blocking)
-      let adminEmailSent = false;
+      // Try to store in Firebase (optional - don't block if it fails)
+      let firebaseSuccess = false;
       try {
-        adminEmailSent = await sendBookingEmail({
+        const firebaseResult = await trackBookingRequest({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          company: formData.company.trim(),
+          preferredDate: formData.preferredDate,
+          preferredTime: formData.preferredTime,
+          message: formData.message.trim(),
+        });
+        firebaseSuccess = !!firebaseResult;
+        console.log(
+          firebaseSuccess
+            ? "✅ Firebase storage successful"
+            : "⚠️ Firebase storage failed but continuing with email",
+        );
+      } catch (firebaseError) {
+        console.warn(
+          "⚠️ Firebase failed, continuing with email only:",
+          firebaseError,
+        );
+      }
+
+      // Send admin notification email
+      try {
+        await sendBookingEmail({
           name: formData.name.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim(),
@@ -297,11 +310,10 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
         console.warn("Admin email failed, but booking was saved:", emailError);
       }
 
-      // User confirmation email is already sent by sendBookingEmail above
-
-      // Send user confirmation (now just shows local confirmation)
+      // Send user confirmation email
+      let userEmailSent = false;
       try {
-        await sendUserBookingConfirmation({
+        userEmailSent = await sendUserBookingConfirmation({
           name: formData.name.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim(),
@@ -321,7 +333,10 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
           <div>
             <p className="font-semibold">Booking Request Sent!</p>
             <p className="text-sm opacity-90">
-              We will contact you within 24 hours to confirm your appointment.
+              {userEmailSent
+                ? "Check your email for confirmation details. We'll contact you within 24 hours."
+                : "We'll contact you within 24 hours to confirm your appointment."}{" "}
+              {!firebaseSuccess && " (Email backup active)"}{" "}
             </p>
           </div>
         </div>,

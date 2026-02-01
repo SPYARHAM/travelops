@@ -14,6 +14,7 @@ import {
   Rocket,
 } from "lucide-react";
 import { trackFormSubmission, trackCTAClick } from "@/lib/firebase";
+import { sendNewsletterEmail } from "@/lib/email";
 import toast from "react-hot-toast";
 
 export function FinalCTASection() {
@@ -26,20 +27,27 @@ export function FinalCTASection() {
     setIsSubmitting(true);
 
     try {
+      // Store in Firebase
       await trackFormSubmission({
         email,
         formType: "newsletter",
       });
 
-      toast.success("Thanks! We'll send you details shortly.", {
-        duration: 5000,
-        icon: "✉️",
-        style: {
-          background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
-          color: "white",
-          borderRadius: "12px",
+      // Send welcome email and admin notification
+      await sendNewsletterEmail(email);
+
+      toast.success(
+        "Perfect! Check your email for exclusive travel insights.",
+        {
+          duration: 5000,
+          icon: "✉️",
+          style: {
+            background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+            color: "white",
+            borderRadius: "12px",
+          },
         },
-      });
+      );
 
       setEmail("");
     } catch (error) {

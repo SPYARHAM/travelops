@@ -163,7 +163,15 @@ export const trackBookingRequest = async (bookingData: {
     });
 
     return docRef.id;
-  } catch (error) {
+  } catch (error: unknown) {
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    console.error("🔥 Firebase booking error details:", {
+      code: errorObj instanceof Error && 'code' in errorObj ? (errorObj as Record<string, unknown>).code : undefined,
+      message: errorObj.message,
+      details: error,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    });
+    
     if (process.env.NODE_ENV === "development") {
       console.warn(
         "Firebase booking tracking disabled - check Firestore rules:",
