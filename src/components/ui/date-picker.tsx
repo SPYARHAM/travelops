@@ -144,37 +144,39 @@ export function DatePicker({ value, onChange, error }: DatePickerProps) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 4, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="absolute z-50 top-full mt-2 left-0 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute z-[60] top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-gray-100">
               <button
                 type="button"
                 onClick={() => navigateMonth("prev")}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-white/80 transition-colors"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-600" />
+                <ChevronLeft className="w-4 h-4 text-gray-700" />
               </button>
-              <span className="font-semibold text-gray-900">{monthYear}</span>
+              <span className="text-sm font-semibold text-gray-900">
+                {monthYear}
+              </span>
               <button
                 type="button"
                 onClick={() => navigateMonth("next")}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-white/80 transition-colors"
               >
-                <ChevronRight className="w-5 h-5 text-gray-600" />
+                <ChevronRight className="w-4 h-4 text-gray-700" />
               </button>
             </div>
 
             {/* Weekday Headers */}
-            <div className="grid grid-cols-7 gap-1 p-3 border-b border-gray-50">
+            <div className="grid grid-cols-7 gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-gray-100">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                 <div
                   key={day}
-                  className="text-center text-xs font-medium text-gray-400 py-2"
+                  className="text-center text-[10px] font-semibold text-gray-500 py-1"
                 >
                   {day}
                 </div>
@@ -182,7 +184,7 @@ export function DatePicker({ value, onChange, error }: DatePickerProps) {
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1 p-3">
+            <div className="grid grid-cols-7 gap-0.5 p-2">
               {days.map((day, index) => {
                 const isSelected = value === formatDate(day.date);
                 const isDisabled =

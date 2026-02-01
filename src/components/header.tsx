@@ -19,7 +19,7 @@ const navLinks = [
   { href: "#solution", label: "Solution" },
   { href: "#features", label: "Features" },
   { href: "#process", label: "Process" },
-  { href: "#investment", label: "Investment" },
+  // { href: "#investment", label: "Investment" },
 ];
 
 export function Header() {
@@ -65,14 +65,10 @@ export function Header() {
   return (
     <>
       <motion.header
-        style={{
-          backgroundColor: headerBg,
-          backdropFilter: `blur(${headerBlur}px)`,
-          borderBottom: `1px solid`,
-          borderColor: headerBorder,
-        }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-shadow duration-300 ${
-          isScrolled ? "shadow-lg shadow-violet-500/5" : ""
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-xl shadow-lg shadow-violet-500/5 border-b border-violet-100"
+            : "bg-white/60 backdrop-blur-md border-b border-transparent"
         }`}
       >
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-3">

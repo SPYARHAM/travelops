@@ -18,7 +18,7 @@ export default function Home() {
       <SolutionSection />
       <FeaturesSection />
       <ProcessSection />
-      <AudienceSection />
+      {/* <AudienceSection /> */}
       {/* <InvestmentSection /> */}
       <FinalCTASection />
       <Footer />
