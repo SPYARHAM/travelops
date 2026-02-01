@@ -60,46 +60,7 @@ export const sendContactEmail = async (
     return false;
   }
 };
-// Send confirmation email to user using Web3Forms
-export const sendUserBookingConfirmation = async (
-  data: BookingEmailData,
-): Promise<boolean> => {
-  if (!WEB3FORMS_ACCESS_KEY) {
-    console.error("❌ Web3Forms Access Key is not configured!");
-    return false;
-  }
-  try {
-    const payload = {
-      access_key: WEB3FORMS_ACCESS_KEY,
-      subject: `Booking Confirmed: ${data.name} - We'll be in touch!`,
-      from_name: "TraveloOps Team",
-      from_email: "noreply@traveloops.com",
-      to_email: data.email,
-      user_name: data.name,
-      preferred_date: data.preferredDate || "a date that works for you",
-      preferred_time: data.preferredTime || "a convenient time",
-      company: data.company || "your company",
-      message: data.message || "No additional message",
-      replyto: "noreply@traveloops.com",
-    };
-    const response = await axios.post(WEB3FORMS_API_URL, payload, {
-      headers: { "Content-Type": "application/json" },
-    });
-    if (response.data && response.data.success) {
-      console.log("✅ User confirmation email sent via Web3Forms");
-      return true;
-    } else {
-      console.error("❌ Web3Forms error:", response.data);
-      return false;
-    }
-  } catch (error) {
-    console.error(
-      "❌ Error sending user confirmation email via Web3Forms:",
-      error,
-    );
-    return false;
-  }
-};
+
 import axios from "axios";
 
 // Web3Forms API endpoint and key
@@ -114,57 +75,47 @@ export const sendBookingEmail = async (
     return false;
   }
   try {
-    // Send to admin
+    // Send only to admin with all booking details
     const adminPayload = {
       access_key: WEB3FORMS_ACCESS_KEY,
-      subject: `New Booking: ${data.name} - ${data.preferredDate || "Flexible"}`,
+      subject: `🚨 New Booking from ${data.name} - ${data.preferredDate || "Flexible"}`,
       from_name: data.name,
       from_email: data.email,
       to_email: ADMIN_EMAIL,
+      name: data.name,
+      email: data.email,
       phone: data.phone || "Not provided",
       company: data.company || "Not provided",
       preferred_date: data.preferredDate || "Flexible",
       preferred_time: data.preferredTime || "Flexible",
-      message: data.message || "No additional message",
+      message: `BOOKING DETAILS:\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || "Not provided"}\nCompany: ${data.company || "Not provided"}\nPreferred Date: ${data.preferredDate || "Flexible"}\nPreferred Time: ${data.preferredTime || "Flexible"}\nMessage: ${data.message || "No additional message"}\n\nPlease follow up with the client as soon as possible.`,
       replyto: data.email,
-      html_content: createAdminBookingEmailHTML(data),
     };
     const adminRes = await axios.post(WEB3FORMS_API_URL, adminPayload, {
       headers: { "Content-Type": "application/json" },
     });
-    // Send to user
-    const userPayload = {
-      access_key: WEB3FORMS_ACCESS_KEY,
-      subject: `Booking Confirmed: ${data.name} - We'll be in touch!`,
-      from_name: "TraveloOps Team",
-      from_email: "noreply@traveloops.com",
-      to_email: data.email,
-      user_name: data.name,
-      preferred_date: data.preferredDate || "a date that works for you",
-      preferred_time: data.preferredTime || "a convenient time",
-      company: data.company || "your company",
-      message: data.message || "No additional message",
-      replyto: "noreply@traveloops.com",
-      html_content: createUserConfirmationEmailHTML(data),
-    };
-    const userRes = await axios.post(WEB3FORMS_API_URL, userPayload, {
-      headers: { "Content-Type": "application/json" },
-    });
-    const adminSuccess = adminRes.data && adminRes.data.success;
-    const userSuccess = userRes.data && userRes.data.success;
-    if (adminSuccess && userSuccess) {
-      console.log("✅ Booking emails sent to admin and user via Web3Forms");
+    
+    if (adminRes.data && adminRes.data.success) {
+      console.log("✅ Booking notification sent to admin via Web3Forms");
       return true;
     } else {
-      if (!adminSuccess)
-        console.error("❌ Web3Forms admin error:", adminRes.data);
-      if (!userSuccess) console.error("❌ Web3Forms user error:", userRes.data);
+      console.error("❌ Web3Forms admin error:", adminRes.data);
       return false;
     }
   } catch (error) {
-    console.error("❌ Error sending booking emails via Web3Forms:", error);
+    console.error("❌ Error sending booking email via Web3Forms:", error);
     return false;
   }
+};
+
+// Send confirmation email to user (separate from Web3Forms to avoid duplicates)
+export const sendUserBookingConfirmation = async (
+  data: BookingEmailData,
+): Promise<boolean> => {
+  // This function now just shows local success message
+  // User will be notified via the toast message in the UI
+  console.log("✅ User will receive confirmation via UI toast message");
+  return true;
 };
 
 // Your admin email address

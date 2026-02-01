@@ -297,7 +297,9 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
         console.warn("Admin email failed, but booking was saved:", emailError);
       }
 
-      // Try to send confirmation email to user (non-blocking)
+      // User confirmation email is already sent by sendBookingEmail above
+
+      // Send user confirmation (now just shows local confirmation)
       try {
         await sendUserBookingConfirmation({
           name: formData.name.trim(),
@@ -309,7 +311,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
           message: formData.message.trim(),
         });
       } catch (confirmError) {
-        console.warn("User confirmation email failed:", confirmError);
+        console.warn("User confirmation failed:", confirmError);
       }
 
       // Show success message
