@@ -50,14 +50,14 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleBookCall = async () => {
-    await trackCTAClick("book_call", "header");
+  const handleBookCall = () => {
+    trackCTAClick("book_call", "header");
     setIsBookCallOpen(true);
     setIsMobileMenuOpen(false);
   };
 
-  const handleContact = async () => {
-    await trackCTAClick("contact", "header");
+  const handleContact = () => {
+    trackCTAClick("contact", "header");
     setIsContactOpen(true);
     setIsMobileMenuOpen(false);
   };

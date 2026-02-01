@@ -50,8 +50,8 @@ export function FinalCTASection() {
     }
   };
 
-  const handleBookCall = async () => {
-    await trackCTAClick("book_strategy_call", "final_cta");
+  const handleBookCall = () => {
+    trackCTAClick("book_strategy_call", "final_cta");
     setIsBookCallOpen(true);
   };
 

@@ -44,13 +44,13 @@ const floatingBadges = [
 export function HeroSection() {
   const [isBookCallOpen, setIsBookCallOpen] = useState(false);
 
-  const handleBookCall = async () => {
-    await trackCTAClick("book_consultation", "hero");
+  const handleBookCall = () => {
+    trackCTAClick("book_consultation", "hero");
     setIsBookCallOpen(true);
   };
 
-  const handleSeeHow = async () => {
-    await trackCTAClick("see_how_it_works", "hero");
+  const handleSeeHow = () => {
+    trackCTAClick("see_how_it_works", "hero");
     const element = document.getElementById("solution");
     element?.scrollIntoView({ behavior: "smooth" });
   };
