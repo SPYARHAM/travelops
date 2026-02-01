@@ -458,8 +458,9 @@ section {
 
 /* Modal Backdrop */
 .modal-backdrop {
-  background: rgba(10, 10, 20, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Input Focus Glow */
