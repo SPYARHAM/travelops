@@ -325,7 +325,7 @@ export function BookingUserEmailTemplate({ name }: { name: string }) {
               Our team will review your booking within 2-4 hours
             </li>
             <li style={{ marginBottom: "8px" }}>
-              We'll send you a calendar invite with the meeting details
+              We&apos;ll send you a calendar invite with the meeting details
             </li>
             <li style={{ marginBottom: "8px" }}>
               We'll prepare a custom demo based on your business needs

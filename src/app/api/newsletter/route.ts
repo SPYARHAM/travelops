@@ -1,5 +1,5 @@
-import { Resend } from "resend";
 import { NextRequest } from "next/server";
+import { sendEmail } from "@/lib/email-smtp";
 
 // Create HTML for newsletter admin notification
 function createNewsletterAdminHTML(email: string) {
@@ -92,8 +92,16 @@ function createNewsletterUserHTML() {
 }
 
 export async function POST(req: NextRequest) {
-  // Initialize Resend inside the handler to avoid build-time errors
-  const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
+  if (!process.env.GMAIL_APP_PASSWORD) {
+    console.error("Missing GMAIL_APP_PASSWORD environment variable");
+    return Response.json(
+      {
+        error:
+          "Email service not configured. Please set up Gmail app password.",
+      },
+      { status: 500 },
+    );
+  }
 
   try {
     const body = await req.json();
@@ -104,16 +112,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Send admin notification
-    const { data: adminData, error: adminError } = await resend.emails.send({
-      from: "TravelOps <jainarham2101@gmail.com>",
-      to: ["jainarham2101@gmail.com"],
+    const adminResult = await sendEmail({
+      to: "jainarham2101@gmail.com",
       subject: `🎯 New Newsletter Signup: ${email}`,
       html: createNewsletterAdminHTML(email),
       replyTo: "jainarham2101@gmail.com",
     });
 
-    if (adminError) {
-      console.error("Admin newsletter email error:", adminError);
+    if (!adminResult.success) {
+      console.error("Admin newsletter email error:", adminResult.error);
       return Response.json(
         { error: "Failed to send admin notification" },
         { status: 500 },
@@ -121,16 +128,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Send welcome email to subscriber
-    const { data: userData, error: userError } = await resend.emails.send({
-      from: "TravelOps <jainarham2101@gmail.com>",
-      to: [email],
+    const userResult = await sendEmail({
+      to: email,
       subject: "Welcome to TravelOps Insights! ✈️",
       html: createNewsletterUserHTML(),
       replyTo: "jainarham2101@gmail.com",
     });
 
-    if (userError) {
-      console.error("User newsletter email error:", userError);
+    if (!userResult.success) {
+      console.error("User newsletter email error:", userResult.error);
       return Response.json(
         { error: "Failed to send welcome email" },
         { status: 500 },
@@ -139,8 +145,8 @@ export async function POST(req: NextRequest) {
 
     return Response.json({
       success: true,
-      adminData,
-      userData,
+      adminResult,
+      userResult,
       message: "Newsletter emails sent successfully",
     });
   } catch (error) {

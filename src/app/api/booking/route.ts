@@ -1,7 +1,5 @@
-import { Resend } from "resend";
 import { NextRequest } from "next/server";
-
-const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
+import { sendEmail } from "@/lib/email-smtp";
 
 // Create HTML for booking admin notification
 function createBookingAdminHTML({
@@ -135,6 +133,17 @@ function createBookingUserHTML({
 }
 
 export async function POST(req: NextRequest) {
+  if (!process.env.GMAIL_APP_PASSWORD) {
+    console.error("Missing GMAIL_APP_PASSWORD environment variable");
+    return Response.json(
+      {
+        error:
+          "Email service not configured. Please set up Gmail app password.",
+      },
+      { status: 500 },
+    );
+  }
+
   try {
     const body = await req.json();
     const {
@@ -155,9 +164,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Send admin notification
-    const { data: adminData, error: adminError } = await resend.emails.send({
-      from: "TravelOps <jainarham2101@gmail.com>",
-      to: ["jainarham2101@gmail.com"],
+    const adminResult = await sendEmail({
+      to: "jainarham2101@gmail.com",
       subject: `🚨 New Booking from ${name} - ${preferredDate || "Flexible"} at ${preferredTime || "Flexible"}`,
       html: createBookingAdminHTML({
         name,
@@ -171,8 +179,8 @@ export async function POST(req: NextRequest) {
       replyTo: email,
     });
 
-    if (adminError) {
-      console.error("Admin booking email error:", adminError);
+    if (!adminResult.success) {
+      console.error("Admin booking email error:", adminResult.error);
       return Response.json(
         { error: "Failed to send admin notification" },
         { status: 500 },
@@ -180,16 +188,19 @@ export async function POST(req: NextRequest) {
     }
 
     // Send user confirmation
-    const { data: userData, error: userError } = await resend.emails.send({
-      from: "TravelOps <jainarham2101@gmail.com>",
-      to: [email],
+    const userResult = await sendEmail({
+      to: email,
       subject: "🎉 Booking Confirmed - We'll be in touch soon!",
-      html: createBookingUserHTML(name),
+      html: createBookingUserHTML({
+        name,
+        preferredDate: preferredDate || "Flexible",
+        preferredTime: preferredTime || "Flexible",
+      }),
       replyTo: "jainarham2101@gmail.com",
     });
 
-    if (userError) {
-      console.error("User booking email error:", userError);
+    if (!userResult.success) {
+      console.error("User booking email error:", userResult.error);
       return Response.json(
         { error: "Failed to send user confirmation" },
         { status: 500 },
@@ -198,8 +209,8 @@ export async function POST(req: NextRequest) {
 
     return Response.json({
       success: true,
-      adminData,
-      userData,
+      adminResult,
+      userResult,
       message: "Booking emails sent successfully",
     });
   } catch (error) {
