@@ -17,7 +17,6 @@ import {
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { trackBookingRequest } from "@/lib/firebase";
-import { sendBookingEmail, sendUserBookingConfirmation } from "@/lib/email";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 
@@ -295,9 +294,13 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
         );
       }
 
-      // Send admin notification email
-      try {
-        await sendBookingEmail({
+      // Send emails via API route
+      const response = await fetch("/api/booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           name: formData.name.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim(),
@@ -305,26 +308,16 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
           preferredDate: formData.preferredDate,
           preferredTime: formData.preferredTime,
           message: formData.message.trim(),
-        });
-      } catch (emailError) {
-        console.warn("Admin email failed, but booking was saved:", emailError);
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send booking request");
       }
 
-      // Send user confirmation email
-      let userEmailSent = false;
-      try {
-        userEmailSent = await sendUserBookingConfirmation({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim(),
-          company: formData.company.trim(),
-          preferredDate: formData.preferredDate,
-          preferredTime: formData.preferredTime,
-          message: formData.message.trim(),
-        });
-      } catch (confirmError) {
-        console.warn("User confirmation failed:", confirmError);
-      }
+      const result = await response.json();
+      console.log("Booking API success:", result);
 
       // Show success message
       toast.success(
@@ -333,10 +326,9 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
           <div>
             <p className="font-semibold">Booking Request Sent!</p>
             <p className="text-sm opacity-90">
-              {userEmailSent
-                ? "Check your email for confirmation details. We'll contact you within 24 hours."
-                : "We'll contact you within 24 hours to confirm your appointment."}{" "}
-              {!firebaseSuccess && " (Email backup active)"}{" "}
+              Check your email for confirmation details. We&apos;ll contact you
+              within 24 hours.
+              {!firebaseSuccess && " (Email backup active)"}
             </p>
           </div>
         </div>,
