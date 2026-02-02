@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -16,9 +16,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-import { trackBookingRequest } from "@/lib/firebase";
+import { getBookedSlotsForMonth, trackBookingRequest } from "@/lib/firebase";
 import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
+import { GoogleSignInButton, useAuth } from "@/lib/auth";
 
 interface BookCallModalProps {
   isOpen: boolean;
@@ -48,7 +49,12 @@ interface ValidationErrors {
 }
 
 export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
+  const { user, userEmail, userName } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allowCustomEmail, setAllowCustomEmail] = useState(false);
+  const [bookedSlotsByDate, setBookedSlotsByDate] = useState<
+    Record<string, string[]>
+  >({});
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -60,6 +66,35 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (userEmail && !allowCustomEmail) {
+      setFormData((prev) => ({
+        ...prev,
+        email: userEmail,
+        name: prev.name || userName || "",
+      }));
+    }
+  }, [userEmail, userName, allowCustomEmail]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadBookedSlots = async () => {
+      try {
+        const slots = await getBookedSlotsForMonth();
+        if (isMounted) {
+          setBookedSlotsByDate(slots);
+        }
+      } catch (error) {
+        console.error("Failed to preload booked slots:", error);
+      }
+    };
+
+    loadBookedSlots();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // No EmailJS initialization needed for Web3Forms
 
@@ -420,9 +455,48 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-3 sm:space-y-4"
+                >
+                  {/* Google sign-in helper */}
+                  {!user && (
+                    <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-800">
+                          Prefill with Google
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Sign in to auto-fill your name and email. You can
+                          still use your work email.
+                        </p>
+                      </div>
+                      <GoogleSignInButton
+                        size="small"
+                        className="w-full sm:w-auto"
+                      />
+                    </div>
+                  )}
+
+                  {user && userEmail && (
+                    <div className="rounded-xl border border-green-200 bg-green-50/60 p-3 sm:p-4 flex items-center justify-between gap-3">
+                      <div className="text-xs sm:text-sm text-green-700">
+                        Signed in as{" "}
+                        <span className="font-semibold">{userEmail}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setAllowCustomEmail((prev) => !prev)}
+                        className="text-xs font-semibold text-violet-600 hover:text-violet-700"
+                      >
+                        {allowCustomEmail
+                          ? "Use Google email"
+                          : "Use work email"}
+                      </button>
+                    </div>
+                  )}
                   {/* Name & Email Row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
@@ -432,7 +506,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                         value={formData.name}
                         onChange={handleChange}
                         onBlur={() => handleBlur("name")}
-                        className={`w-full pl-10 pr-4 h-12 rounded-xl border bg-white transition-all outline-none ${
+                        className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border bg-white transition-all outline-none ${
                           touched.name && errors.name
                             ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                             : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
@@ -449,11 +523,16 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                       <input
                         type="email"
                         name="email"
-                        placeholder="Email address *"
+                        placeholder={
+                          allowCustomEmail || !userEmail
+                            ? "Work email address *"
+                            : "Email address *"
+                        }
                         value={formData.email}
                         onChange={handleChange}
                         onBlur={() => handleBlur("email")}
-                        className={`w-full pl-10 pr-4 h-12 rounded-xl border bg-white transition-all outline-none ${
+                        readOnly={!!userEmail && !allowCustomEmail}
+                        className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border bg-white transition-all outline-none ${
                           touched.email && errors.email
                             ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                             : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
@@ -468,7 +547,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                   </div>
 
                   {/* Phone & Company Row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input
@@ -478,7 +557,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                         value={formData.phone}
                         onChange={handleChange}
                         onBlur={() => handleBlur("phone")}
-                        className={`w-full pl-10 pr-4 h-12 rounded-xl border bg-white transition-all outline-none ${
+                        className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border bg-white transition-all outline-none ${
                           touched.phone && errors.phone
                             ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                             : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
@@ -499,7 +578,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                         value={formData.company}
                         onChange={handleChange}
                         onBlur={() => handleBlur("company")}
-                        className={`w-full pl-10 pr-4 h-12 rounded-xl border bg-white transition-all outline-none ${
+                        className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border bg-white transition-all outline-none ${
                           touched.company && errors.company
                             ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
                             : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
@@ -514,7 +593,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                   </div>
 
                   {/* Date & Time Row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div id="date-picker-trigger">
                       <DatePicker
                         value={formData.preferredDate}
@@ -530,6 +609,7 @@ export function BookCallModal({ isOpen, onClose }: BookCallModalProps) {
                       value={formData.preferredTime}
                       onChange={handleTimeChange}
                       date={formData.preferredDate}
+                      firebaseBookedSlots={bookedSlotsByDate}
                       error={
                         touched.preferredTime ? errors.preferredTime : undefined
                       }

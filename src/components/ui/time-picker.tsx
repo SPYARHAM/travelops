@@ -3,12 +3,14 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Check } from "lucide-react";
+import { getBookedSlotsForMonth } from "@/lib/firebase";
 
 interface TimePickerProps {
   value: string;
   onChange: (time: string) => void;
   date: string;
   error?: string;
+  firebaseBookedSlots?: Record<string, string[]>;
 }
 
 const TIME_SLOTS = [
@@ -32,8 +34,8 @@ const TIME_SLOTS = [
   { time: "17:30", label: "5:30 PM" },
 ];
 
-// Generate random booked slots for a given date
-const generateBookedSlots = (dateStr: string): string[] => {
+// Generate simulated booked slots for a given date (looks more premium)
+const generateSimulatedBookedSlots = (dateStr: string): string[] => {
   if (!dateStr) return [];
 
   const selectedDate = new Date(dateStr);
@@ -46,18 +48,21 @@ const generateBookedSlots = (dateStr: string): string[] => {
     (selectedDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  // Week 1 (next 7 days): 3-9 booked slots
-  // Week 2 (days 8-14): 1-10 booked slots
-  let minSlots = 3;
-  let maxSlots = 9;
+  // Week 1 (next 7 days): 4-8 booked slots (busier)
+  // Week 2 (days 8-14): 2-5 booked slots
+  let minSlots = 4;
+  let maxSlots = 8;
 
   if (daysDiff >= 7 && daysDiff < 14) {
+    minSlots = 2;
+    maxSlots = 5;
+  } else if (daysDiff >= 14) {
     minSlots = 1;
-    maxSlots = 10;
+    maxSlots = 3;
   }
 
   // Use date as seed for consistent randomness
-  const seed = dateStr.split("-").join("");
+  const seed = dateStr.split(/[-/\s]/).join("");
   const random = (index: number) => {
     const x = Math.sin(parseInt(seed) + index) * 10000;
     return x - Math.floor(x);
@@ -67,28 +72,67 @@ const generateBookedSlots = (dateStr: string): string[] => {
   const numBookedSlots =
     Math.floor(random(0) * (maxSlots - minSlots + 1)) + minSlots;
 
-  // Randomly select which slots are booked
+  // Randomly select which slots are booked (prefer morning/early afternoon)
   const bookedIndices: number[] = [];
   while (bookedIndices.length < numBookedSlots) {
-    const index = Math.floor(
-      random(bookedIndices.length + 100) * TIME_SLOTS.length,
+    // Weight towards earlier slots (more realistic)
+    const weightedIndex = Math.floor(
+      Math.pow(random(bookedIndices.length + 100), 0.7) * TIME_SLOTS.length,
     );
-    if (!bookedIndices.includes(index)) {
-      bookedIndices.push(index);
+    if (!bookedIndices.includes(weightedIndex)) {
+      bookedIndices.push(weightedIndex);
     }
   }
 
   return bookedIndices.map((i) => TIME_SLOTS[i].time);
 };
 
-export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
+export function TimePicker({
+  value,
+  onChange,
+  date,
+  error,
+  firebaseBookedSlots,
+}: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [realBookedSlots, setRealBookedSlots] = useState<
+    Record<string, string[]>
+  >({});
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Generate booked slots when date changes using useMemo
+  // Load booked slots from Firebase on mount
+  useEffect(() => {
+    const loadBookedSlots = async () => {
+      if (firebaseBookedSlots) {
+        setRealBookedSlots(firebaseBookedSlots);
+        return;
+      }
+
+      try {
+        const slots = await getBookedSlotsForMonth();
+        setRealBookedSlots(slots);
+      } catch (error) {
+        console.error("Failed to load booked slots:", error);
+      }
+    };
+
+    loadBookedSlots();
+  }, [firebaseBookedSlots]);
+
+  // Combine simulated and real booked slots
   const bookedSlots = useMemo(() => {
-    return date ? generateBookedSlots(date) : [];
-  }, [date]);
+    if (!date) return [];
+
+    // Get real booked slots from Firebase
+    const realSlots = realBookedSlots[date] || [];
+
+    // Get simulated booked slots
+    const simulatedSlots = generateSimulatedBookedSlots(date);
+
+    // Combine and deduplicate
+    const allBooked = [...new Set([...realSlots, ...simulatedSlots])];
+    return allBooked;
+  }, [date, realBookedSlots]);
 
   // Format display for selected time
   const formatDisplayTime = (timeStr: string) => {
@@ -167,21 +211,25 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
             setIsOpen(!isOpen);
           }
         }}
-        className={`w-full h-12 pl-10 pr-4 rounded-xl border bg-white text-left transition-all duration-200 flex items-center ${
+        className={`w-full h-11 sm:h-12 pl-9 sm:pl-10 pr-3 sm:pr-4 rounded-xl border bg-white text-left transition-all duration-200 flex items-center ${
           error
             ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
             : "border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 hover:border-violet-300"
         } ${!date ? "cursor-not-allowed opacity-60" : ""}`}
       >
         <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <span className={`flex-1 ${value ? "text-gray-900" : "text-gray-400"}`}>
+        <span
+          className={`flex-1 text-xs sm:text-sm truncate ${value ? "text-gray-900" : "text-gray-400"}`}
+        >
           {value
             ? formatDisplayTime(value)
             : date
               ? "Select time slot"
               : "Select date first"}
         </span>
-        {value && <Check className="w-4 h-4 text-violet-500 ml-2" />}
+        {value && (
+          <Check className="w-4 h-4 text-violet-500 ml-1 flex-shrink-0" />
+        )}
       </button>
 
       {error && <p className="text-red-500 text-xs mt-1 ml-1">{error}</p>}
@@ -194,18 +242,21 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute z-[60] top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+            className="absolute z-[60] top-full mt-1 left-0 w-[200px] sm:w-[240px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
           >
             {/* Header */}
-            <div className="px-3 py-2 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-gray-100">
-              <p className="text-xs font-semibold text-gray-700">
+            <div className="px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600">
+              <p className="text-sm font-bold text-white text-center">
                 Select a time
+              </p>
+              <p className="text-xs text-violet-100 text-center mt-0.5">
+                30-minute slots
               </p>
             </div>
 
             {/* Time Grid - Scrollable */}
-            <div className="max-h-[200px] overflow-y-auto p-2">
-              <div className="grid grid-cols-3 gap-1.5">
+            <div className="max-h-[240px] overflow-y-auto p-2">
+              <div className="grid grid-cols-2 gap-2">
                 {TIME_SLOTS.map((slot) => {
                   const isSelected = value === slot.time;
                   const isDisabled = shouldDisableSlot(slot.time);
@@ -224,10 +275,10 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
                         }}
                         disabled={isUnavailable}
                         className={`
-                          relative px-2 py-2 rounded-lg text-xs font-medium transition-all duration-150 w-full
+                          relative px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 w-full
                           ${
                             isUnavailable
-                              ? "text-gray-300 cursor-not-allowed bg-gray-50/50 line-through"
+                              ? "text-gray-300 cursor-not-allowed bg-gray-50 line-through"
                               : isSelected
                                 ? "bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md shadow-violet-500/30"
                                 : "bg-gray-50 text-gray-700 hover:bg-violet-50 hover:text-violet-700 border border-gray-100 hover:border-violet-200"
@@ -235,6 +286,9 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
                         `}
                       >
                         {slot.label}
+                        {isBooked && !isDisabled && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                        )}
                         {isSelected && (
                           <motion.div
                             layoutId="selected-time"
@@ -259,6 +313,20 @@ export function TimePicker({ value, onChange, date, error }: TimePickerProps) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Footer legend */}
+            <div className="px-3 py-2 border-t border-gray-100 bg-gray-50/50">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                  <span className="text-[10px] text-gray-500">Booked</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600"></div>
+                  <span className="text-[10px] text-gray-500">Selected</span>
+                </div>
               </div>
             </div>
           </motion.div>

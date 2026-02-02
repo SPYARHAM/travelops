@@ -153,6 +153,16 @@ export const trackBookingRequest = async (bookingData: {
       createdAt: new Date().toISOString(),
     });
 
+    if (bookingData.preferredDate && bookingData.preferredTime) {
+      await addDoc(collection(db, "booking_slots"), {
+        bookingId: docRef.id,
+        date: bookingData.preferredDate,
+        time: bookingData.preferredTime,
+        status: "pending",
+        createdAt: serverTimestamp(),
+      });
+    }
+
     await trackActivity({
       type: "book_call",
       metadata: {
@@ -166,12 +176,15 @@ export const trackBookingRequest = async (bookingData: {
   } catch (error: unknown) {
     const errorObj = error instanceof Error ? error : new Error(String(error));
     console.error("🔥 Firebase booking error details:", {
-      code: errorObj instanceof Error && 'code' in errorObj ? (errorObj as Record<string, unknown>).code : undefined,
+      code:
+        errorObj instanceof Error && "code" in errorObj
+          ? (errorObj as Record<string, unknown>).code
+          : undefined,
       message: errorObj.message,
       details: error,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     });
-    
+
     if (process.env.NODE_ENV === "development") {
       console.warn(
         "Firebase booking tracking disabled - check Firestore rules:",
@@ -212,6 +225,62 @@ export const getBookings = async () => {
   } catch (error) {
     console.error("Error fetching bookings:", error);
     return [];
+  }
+};
+
+// Get booked slots for a specific date
+export const getBookedSlotsForDate = async (
+  date: string,
+): Promise<string[]> => {
+  try {
+    const snapshot = await getDocs(collection(db, "booking_slots"));
+    const bookedSlots: string[] = [];
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      if (
+        data.date === date &&
+        (data.status === "pending" || data.status === "confirmed")
+      ) {
+        if (data.time) {
+          bookedSlots.push(data.time);
+        }
+      }
+    });
+
+    return bookedSlots;
+  } catch (error) {
+    console.error("Error fetching booked slots:", error);
+    return [];
+  }
+};
+
+// Get all booked slots for upcoming days (preload for performance)
+export const getBookedSlotsForMonth = async (): Promise<
+  Record<string, string[]>
+> => {
+  try {
+    const snapshot = await getDocs(collection(db, "booking_slots"));
+    const bookedSlotsByDate: Record<string, string[]> = {};
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      if (
+        data.date &&
+        data.time &&
+        (data.status === "pending" || data.status === "confirmed")
+      ) {
+        if (!bookedSlotsByDate[data.date]) {
+          bookedSlotsByDate[data.date] = [];
+        }
+        bookedSlotsByDate[data.date].push(data.time);
+      }
+    });
+
+    return bookedSlotsByDate;
+  } catch (error) {
+    console.error("Error fetching booked slots for month:", error);
+    return {};
   }
 };
 

@@ -10,11 +10,12 @@ import {
   MessageSquare,
   Send,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import { trackFormSubmission } from "@/lib/firebase";
+import { GoogleSignInButton, useAuth } from "@/lib/auth";
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -22,7 +23,9 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ isOpen, onClose }: ContactModalProps) {
+  const { user, userEmail, userName } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allowCustomEmail, setAllowCustomEmail] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,6 +33,16 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
     company: "",
     message: "",
   });
+
+  useEffect(() => {
+    if (userEmail && !allowCustomEmail) {
+      setFormData((prev) => ({
+        ...prev,
+        email: userEmail,
+        name: prev.name || userName || "",
+      }));
+    }
+  }, [userEmail, userName, allowCustomEmail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,9 +157,48 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-3 sm:space-y-4"
+                >
+                  {/* Google sign-in helper */}
+                  {!user && (
+                    <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-gray-800">
+                          Prefill with Google
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Sign in to auto-fill your name and email. You can
+                          still use your work email.
+                        </p>
+                      </div>
+                      <GoogleSignInButton
+                        size="small"
+                        className="w-full sm:w-auto"
+                      />
+                    </div>
+                  )}
+
+                  {user && userEmail && (
+                    <div className="rounded-xl border border-green-200 bg-green-50/60 p-3 sm:p-4 flex items-center justify-between gap-3">
+                      <div className="text-xs sm:text-sm text-green-700">
+                        Signed in as{" "}
+                        <span className="font-semibold">{userEmail}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setAllowCustomEmail((prev) => !prev)}
+                        className="text-xs font-semibold text-violet-600 hover:text-violet-700"
+                      >
+                        {allowCustomEmail
+                          ? "Use Google email"
+                          : "Use work email"}
+                      </button>
+                    </div>
+                  )}
                   {/* Name & Email Row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
@@ -155,7 +207,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="pl-10 h-12 rounded-xl border-gray-200 focus:border-violet-500 transition-all"
+                        className="pl-9 sm:pl-10 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border-gray-200 focus:border-violet-500 transition-all"
                       />
                     </div>
                     <div className="relative">
@@ -163,17 +215,22 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       <Input
                         name="email"
                         type="email"
-                        placeholder="Email address"
+                        placeholder={
+                          allowCustomEmail || !userEmail
+                            ? "Work email address"
+                            : "Email address"
+                        }
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="pl-10 h-12 rounded-xl border-gray-200 focus:border-violet-500 transition-all"
+                        readOnly={!!userEmail && !allowCustomEmail}
+                        className="pl-9 sm:pl-10 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border-gray-200 focus:border-violet-500 transition-all"
                       />
                     </div>
                   </div>
 
                   {/* Phone & Company Row */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
@@ -182,7 +239,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                         placeholder="Phone (optional)"
                         value={formData.phone}
                         onChange={handleChange}
-                        className="pl-10 h-12 rounded-xl border-gray-200 focus:border-violet-500 transition-all"
+                        className="pl-9 sm:pl-10 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border-gray-200 focus:border-violet-500 transition-all"
                       />
                     </div>
                     <div className="relative">
@@ -192,7 +249,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                         placeholder="Company name"
                         value={formData.company}
                         onChange={handleChange}
-                        className="pl-10 h-12 rounded-xl border-gray-200 focus:border-violet-500 transition-all"
+                        className="pl-9 sm:pl-10 h-11 sm:h-12 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border-gray-200 focus:border-violet-500 transition-all"
                       />
                     </div>
                   </div>
@@ -207,7 +264,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       onChange={handleChange}
                       required
                       rows={4}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all resize-none"
+                      className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-3 text-sm sm:text-base placeholder:text-xs sm:placeholder:text-sm rounded-xl border border-gray-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all resize-none"
                     />
                   </div>
 

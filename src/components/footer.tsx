@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { trackFormSubmission } from "@/lib/firebase";
 import toast from "react-hot-toast";
+import { GoogleSignInButton, useAuth } from "@/lib/auth";
 
 const navLinks = [
   { href: "#problem", label: "Problem" },
@@ -34,9 +35,17 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const { user, userEmail } = useAuth();
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allowCustomEmail, setAllowCustomEmail] = useState(false);
+
+  useEffect(() => {
+    if (userEmail && !allowCustomEmail) {
+      setEmail(userEmail);
+    }
+  }, [userEmail, allowCustomEmail]);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,14 +177,39 @@ export function Footer() {
               Newsletter
             </h4>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2">
+              {!user && (
+                <div className="flex items-center gap-2">
+                  <GoogleSignInButton size="icon" />
+                  <span className="text-[10px] text-gray-500">
+                    Sign in to prefill your email
+                  </span>
+                </div>
+              )}
+              {user && userEmail && (
+                <div className="flex items-center justify-between gap-2 text-[10px] text-green-700 bg-green-50/70 border border-green-200 rounded-md px-2 py-1">
+                  <span className="truncate">Signed in: {userEmail}</span>
+                  <button
+                    type="button"
+                    onClick={() => setAllowCustomEmail((prev) => !prev)}
+                    className="text-violet-600 font-semibold"
+                  >
+                    {allowCustomEmail ? "Use Google" : "Use work email"}
+                  </button>
+                </div>
+              )}
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder={
+                    allowCustomEmail || !userEmail
+                      ? "your@work-email.com"
+                      : "your@email.com"
+                  }
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  readOnly={!!userEmail && !allowCustomEmail}
                   className="pl-9 h-9 rounded-lg bg-white border-gray-200 text-xs focus:border-violet-400 transition-all"
                 />
               </div>
