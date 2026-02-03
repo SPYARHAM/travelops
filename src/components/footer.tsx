@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { trackFormSubmission } from "@/lib/firebase";
 import toast from "react-hot-toast";
-import { GoogleSignInButton, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 
 const navLinks = [
   { href: "#problem", label: "Problem" },
@@ -177,14 +177,6 @@ export function Footer() {
               Newsletter
             </h4>
             <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-              {!user && (
-                <div className="flex items-center gap-2">
-                  <GoogleSignInButton size="icon" />
-                  <span className="text-[10px] text-gray-500">
-                    Sign in to prefill your email
-                  </span>
-                </div>
-              )}
               {user && userEmail && (
                 <div className="flex items-center justify-between gap-2 text-[10px] text-green-700 bg-green-50/70 border border-green-200 rounded-md px-2 py-1">
                   <span className="truncate">Signed in: {userEmail}</span>

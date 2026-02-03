@@ -4,9 +4,7 @@ interface NewsletterEmailTemplateProps {
   email: string;
 }
 
-export function NewsletterEmailTemplate({
-  email,
-}: NewsletterEmailTemplateProps) {
+export function NewsletterEmailTemplate({}: NewsletterEmailTemplateProps) {
   return (
     <div
       style={{

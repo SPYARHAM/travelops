@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { Menu, X, Sparkles, Phone, Mail } from "lucide-react";
 import { BookCallModal } from "@/components/modals/book-call-modal";
 import { ContactModal } from "@/components/modals/contact-modal";
+import { AuthGateModal } from "@/components/modals/auth-gate-modal";
 import { trackCTAClick } from "@/lib/firebase";
 
 const navLinks = [
@@ -25,6 +26,10 @@ const navLinks = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [authGateOpen, setAuthGateOpen] = useState(false);
+  const [pendingModalType, setPendingModalType] = useState<
+    "booking" | "contact"
+  >("booking");
   const [isBookCallOpen, setIsBookCallOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   // const { scrollY } = useScroll();
@@ -52,14 +57,29 @@ export function Header() {
 
   const handleBookCall = () => {
     trackCTAClick("book_call", "header");
-    setIsBookCallOpen(true);
+    setPendingModalType("booking");
+    setAuthGateOpen(true);
     setIsMobileMenuOpen(false);
   };
 
   const handleContact = () => {
     trackCTAClick("contact", "header");
-    setIsContactOpen(true);
+    setPendingModalType("contact");
+    setAuthGateOpen(true);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleAuthGateClosed = () => {
+    setAuthGateOpen(false);
+  };
+
+  const handleAuthGateSignedIn = () => {
+    setAuthGateOpen(false);
+    if (pendingModalType === "booking") {
+      setIsBookCallOpen(true);
+    } else if (pendingModalType === "contact") {
+      setIsContactOpen(true);
+    }
   };
 
   return (
@@ -217,6 +237,12 @@ export function Header() {
       </motion.header>
 
       {/* Modals */}
+      <AuthGateModal
+        isOpen={authGateOpen}
+        onClose={handleAuthGateClosed}
+        onSignedIn={handleAuthGateSignedIn}
+        modalType={pendingModalType}
+      />
       <BookCallModal
         isOpen={isBookCallOpen}
         onClose={() => setIsBookCallOpen(false)}

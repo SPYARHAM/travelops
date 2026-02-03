@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import { trackFormSubmission } from "@/lib/firebase";
-import { GoogleSignInButton, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -161,30 +161,11 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                   onSubmit={handleSubmit}
                   className="space-y-3 sm:space-y-4"
                 >
-                  {/* Google sign-in helper */}
-                  {!user && (
-                    <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-800">
-                          Prefill with Google
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Sign in to auto-fill your name and email. You can
-                          still use your work email.
-                        </p>
-                      </div>
-                      <GoogleSignInButton
-                        size="small"
-                        className="w-full sm:w-auto"
-                      />
-                    </div>
-                  )}
-
+                  {/* Email override toggle - user already signed in */}
                   {user && userEmail && (
                     <div className="rounded-xl border border-green-200 bg-green-50/60 p-3 sm:p-4 flex items-center justify-between gap-3">
                       <div className="text-xs sm:text-sm text-green-700">
-                        Signed in as{" "}
-                        <span className="font-semibold">{userEmail}</span>
+                        Using email: <span className="font-semibold">{userEmail}</span>
                       </div>
                       <button
                         type="button"
@@ -197,6 +178,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
                       </button>
                     </div>
                   )}
+
                   {/* Name & Email Row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="relative">

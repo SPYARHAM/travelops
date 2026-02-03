@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { BookCallModal } from "@/components/modals/book-call-modal";
+import { AuthGateModal } from "@/components/modals/auth-gate-modal";
 import {
   ArrowRight,
   Sparkles,
@@ -19,6 +20,7 @@ import toast from "react-hot-toast";
 export function FinalCTASection() {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authGateOpen, setAuthGateOpen] = useState(false);
   const [isBookCallOpen, setIsBookCallOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,9 +69,18 @@ export function FinalCTASection() {
     }
   };
 
+  const handleAuthGateClosed = () => {
+    setAuthGateOpen(false);
+  };
+
+  const handleAuthGateSignedIn = () => {
+    setAuthGateOpen(false);
+    setIsBookCallOpen(true);
+  };
+
   const handleBookCall = () => {
     trackCTAClick("book_strategy_call", "final_cta");
-    setIsBookCallOpen(true);
+    setAuthGateOpen(true);
   };
 
   return (
@@ -249,6 +260,13 @@ export function FinalCTASection() {
         </div>
       </section>
 
+      {/* Modals */}
+      <AuthGateModal
+        isOpen={authGateOpen}
+        onClose={handleAuthGateClosed}
+        onSignedIn={handleAuthGateSignedIn}
+        modalType="booking"
+      />
       <BookCallModal
         isOpen={isBookCallOpen}
         onClose={() => setIsBookCallOpen(false)}

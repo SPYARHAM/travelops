@@ -4,6 +4,7 @@ import { motion, Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { BookCallModal } from "@/components/modals/book-call-modal";
+import { AuthGateModal } from "@/components/modals/auth-gate-modal";
 import {
   ArrowRight,
   Play,
@@ -41,10 +42,20 @@ const floatingBadges = [
 ];
 
 export function HeroSection() {
+  const [authGateOpen, setAuthGateOpen] = useState(false);
   const [isBookCallOpen, setIsBookCallOpen] = useState(false);
 
   const handleBookCall = () => {
     trackCTAClick("book_consultation", "hero");
+    setAuthGateOpen(true);
+  };
+
+  const handleAuthGateClosed = () => {
+    setAuthGateOpen(false);
+  };
+
+  const handleAuthGateSignedIn = () => {
+    setAuthGateOpen(false);
     setIsBookCallOpen(true);
   };
 
@@ -586,6 +597,13 @@ export function HeroSection() {
         </motion.div>
       </section>
 
+      {/* Modals */}
+      <AuthGateModal
+        isOpen={authGateOpen}
+        onClose={handleAuthGateClosed}
+        onSignedIn={handleAuthGateSignedIn}
+        modalType="booking"
+      />
       <BookCallModal
         isOpen={isBookCallOpen}
         onClose={() => setIsBookCallOpen(false)}

@@ -26,5 +26,10 @@ service cloud.firestore {
       allow write: if true;
       allow read: if false;
     }
+
+    match /booking_slots/{document=**} {
+      allow write: if true;
+      allow read: if true;
+    }
   }
 }

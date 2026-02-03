@@ -283,7 +283,7 @@ export function BookingUserEmailTemplate({ name }: { name: string }) {
       >
         <h1 style={{ margin: "0", fontSize: "32px" }}>🎉 Booking Confirmed!</h1>
         <p style={{ margin: "10px 0 0", fontSize: "18px", opacity: 0.9 }}>
-          We'll be in touch soon, {name}!
+          We&apos;ll be in touch soon, {name}!
         </p>
       </div>
 
@@ -302,8 +302,8 @@ export function BookingUserEmailTemplate({ name }: { name: string }) {
         <p
           style={{ marginBottom: "20px", color: "#6b7280", lineHeight: "1.6" }}
         >
-          Thank you for booking a consultation with TravelOps! We&apos;ve received
-          your booking request and our team will be in touch shortly.
+          Thank you for booking a consultation with TravelOps! We&apos;ve
+          received your booking request and our team will be in touch shortly.
         </p>
 
         <div
@@ -328,7 +328,7 @@ export function BookingUserEmailTemplate({ name }: { name: string }) {
               We&apos;ll send you a calendar invite with the meeting details
             </li>
             <li style={{ marginBottom: "8px" }}>
-              We'll prepare a custom demo based on your business needs
+              We&apos;ll prepare a custom demo based on your business needs
             </li>
           </ul>
         </div>
